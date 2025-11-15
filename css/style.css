@@ -193,7 +193,7 @@ h1, h2, h3, h4, h5, h6, .navbar-brand {
 
 /* --- PHONG CÁCH CHO PAGE HEADER --- */
 .page-header {
-    padding-top: 50px; /* Khoảng cách với navbar fixed-top */
+    padding-top: 50px;
     padding-bottom: 50px;
     background: linear-gradient(135deg, #fff7ed, #fde68a); /* amber-50 to amber-200 */
     text-align: center;
@@ -210,4 +210,58 @@ h1, h2, h3, h4, h5, h6, .navbar-brand {
     color: #6b7280; /* text-gray-500 */
     max-width: 600px;
     margin: 0 auto;
+}
+
+/* --- PHONG CÁCH CHO BỘ LỌC (SIDEBAR) --- */
+.filter-sidebar {
+    background-color: #ffffff;
+    padding: 1.5rem;
+    border-radius: 0.75rem;
+    border: 1px solid #e5e7eb;
+}
+
+.filter-sidebar h5 {
+    font-family: var(--font-display);
+    font-weight: 700;
+    color: var(--color-primary-dark);
+    margin-bottom: 1rem;
+    border-bottom: 2px solid var(--color-primary);
+    padding-bottom: 0.5rem;
+}
+
+.filter-list {
+    list-style: none;
+    padding-left: 0;
+}
+
+.filter-list a {
+    display: block;
+    padding: 0.75rem 1rem;
+    text-decoration: none;
+    color: var(--color-text);
+    font-weight: 600;
+    border-radius: 0.5rem;
+    transition: background-color 0.2s ease;
+}
+
+.filter-list a:hover {
+    background-color: #f5f0e9; /* Màu nền be ấm */
+}
+
+/* Class 'active' cho link đang được chọn */
+.filter-list a.active {
+    background-color: var(--color-primary);
+    color: white;
+}
+
+/* --- TÙY CHỈNH MÀU SẮC BOOTSTRAP --- */
+.btn-outline-primary {
+    color: var(--color-primary);
+    border-color: var(--color-primary);
+}
+
+.btn-outline-primary:hover {
+    background-color: var(--color-primary);
+    border-color: var(--color-primary);
+    color: white;
 }
