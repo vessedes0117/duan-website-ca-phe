@@ -4,13 +4,13 @@ require_once 'includes/header.php';      // Nhúng header
 ?>
 
 <main>
-    <!-- PAGE HEADER -->
-    <section class="text-center py-5" style="background-color: #fff7ed;">
-        <div class="container">
-            <h1 style="color: var(--color-primary-dark);">Tất Cả Sản Phẩm</h1>
-            <p class="lead text-muted">Khám phá bộ sưu tập cà phê Việt Nam chất lượng cao với nhiều loại và hương vị đa dạng.</p>
-        </div>
-    </section>
+<!-- PAGE HEADER -->
+<section class="page-header">
+    <div class="container">
+        <h1>Tất Cả Sản Phẩm</h1>
+        <p>Khám phá bộ sưu tập cà phê Việt Nam chất lượng cao với nhiều loại và hương vị đa dạng.</p>
+    </div>
+</section>
 
     <!-- PRODUCTS GRID -->
     <section class="section-light">
