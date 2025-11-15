@@ -193,7 +193,7 @@ h1, h2, h3, h4, h5, h6, .navbar-brand {
 
 /* --- PHONG CÁCH CHO PAGE HEADER --- */
 .page-header {
-    padding-top: 120px; /* Khoảng cách với navbar fixed-top */
+    padding-top: 50px; /* Khoảng cách với navbar fixed-top */
     padding-bottom: 50px;
     background: linear-gradient(135deg, #fff7ed, #fde68a); /* amber-50 to amber-200 */
     text-align: center;
