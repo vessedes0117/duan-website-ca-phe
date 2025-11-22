@@ -1,63 +1,78 @@
 <?php
+// --- PHẦN XỬ LÝ LOGIC ---
+session_start(); 
 require_once 'includes/db_connection.php';
-require_once 'includes/header.php';
 
-// 1. LẤY ID VÀ KIỂM TRA
+// 1. KIỂM TRA ID
 if (!isset($_GET['id']) || !is_numeric($_GET['id'])) {
-    echo "<script>window.location.href = 'products.php';</script>";
+    header("Location: products.php");
     exit();
 }
 $product_id = intval($_GET['id']);
 
-// 2. XỬ LÝ THÊM VÀO GIỎ HÀNG (LOGIC PHP)
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['add_to_cart'])) {
-    $qty = intval($_POST['quantity']);
-    if ($qty < 1) $qty = 1;
-
-    // Khởi tạo giỏ hàng nếu chưa có
-    if (!isset($_SESSION['cart'])) {
-        $_SESSION['cart'] = [];
-    }
-
-    // Thêm hoặc cập nhật số lượng
-    if (isset($_SESSION['cart'][$product_id])) {
-        $_SESSION['cart'][$product_id] += $qty;
-    } else {
-        $_SESSION['cart'][$product_id] = $qty;
-    }
-
-    // Hiển thị thông báo thành công bằng JS
-    echo "<script>
-        alert('Đã thêm sản phẩm vào giỏ hàng thành công!');
-        window.location.href = 'product-detail.php?id=$product_id';
-    </script>";
-}
-
-// 3. XỬ LÝ GỬI BÌNH LUẬN
-if ($_SERVER['REQUEST_METHOD'] == 'POST' && isset($_POST['submit_review'])) {
-    if (!isset($_SESSION['user_id'])) {
-        echo "<script>alert('Bạn cần đăng nhập để đánh giá!'); window.location.href = 'login.php';</script>";
-    } else {
-        $user_id = $_SESSION['user_id'];
-        $rating = intval($_POST['rating']);
-        $content = trim($_POST['content']);
+// 2. XỬ LÝ POST (PRG Pattern)
+if ($_SERVER['REQUEST_METHOD'] == 'POST') {
+    
+    // Thêm giỏ hàng
+    if (isset($_POST['add_to_cart'])) {
+        $qty = intval($_POST['quantity']);
+        if ($qty < 1) $qty = 1;
+        if (!isset($_SESSION['cart'])) { $_SESSION['cart'] = []; }
         
-        $stmt = $conn->prepare("INSERT INTO comments (product_id, user_id, rating, content) VALUES (?, ?, ?, ?)");
-        $stmt->bind_param("iiis", $product_id, $user_id, $rating, $content);
-        $stmt->execute();
-        echo "<script>alert('Cảm ơn bạn đã đánh giá!'); window.location.href = 'product-detail.php?id=$product_id';</script>";
+        if (isset($_SESSION['cart'][$product_id])) {
+            $_SESSION['cart'][$product_id] += $qty;
+        } else {
+            $_SESSION['cart'][$product_id] = $qty;
+        }
+        echo "<script>alert('Đã thêm sản phẩm vào giỏ hàng!'); window.location.href = 'product-detail.php?id=$product_id';</script>";
+        exit();
+    }
+
+    // Gửi đánh giá
+    if (isset($_POST['submit_review'])) {
+        if (!isset($_SESSION['user_id'])) {
+            echo "<script>alert('Vui lòng đăng nhập!'); window.location.href = 'login.php';</script>";
+            exit();
+        }
+
+        $user_id = $_SESSION['user_id'];
+        $rating = intval($_POST['rating']); // Lấy từ input hidden
+        $content = trim($_POST['content']);
+
+        // Validate cơ bản
+        if ($rating < 1 || $rating > 5) $rating = 5; // Mặc định 5 nếu lỗi
+
+        if (!empty($content)) {
+            $stmt_review = $conn->prepare("INSERT INTO comments (product_id, user_id, rating, content) VALUES (?, ?, ?, ?)");
+            $stmt_review->bind_param("iiis", $product_id, $user_id, $rating, $content);
+            $stmt_review->execute();
+            $stmt_review->close();
+        }
+        header("Location: product-detail.php?id=$product_id#review");
+        exit(); 
     }
 }
 
-// 4. LẤY THÔNG TIN SẢN PHẨM
+require_once 'includes/header.php'; 
+
+// 3. LẤY DỮ LIỆU
 $stmt = $conn->prepare("SELECT * FROM products WHERE id = ?");
 $stmt->bind_param("i", $product_id);
 $stmt->execute();
 $product = $stmt->get_result()->fetch_assoc();
-
 if (!$product) die("Sản phẩm không tồn tại.");
 
-// 5. TÍNH TOÁN THỐNG KÊ SAO (CHO UX REVIEW)
+// Xử lý ảnh
+$image_list = [];
+if (!empty($product['image'])) $image_list[] = $product['image'];
+if (!empty($product['gallery'])) {
+    $gallery_files = explode(',', $product['gallery']);
+    foreach ($gallery_files as $file) if (!empty(trim($file))) $image_list[] = trim($file);
+}
+$image_list = array_unique($image_list);
+if (empty($image_list)) $image_list[] = 'default.jpg';
+
+// Thống kê sao
 $sql_stats = "SELECT rating, COUNT(*) as count FROM comments WHERE product_id = $product_id GROUP BY rating";
 $result_stats = $conn->query($sql_stats);
 $star_counts = [1=>0, 2=>0, 3=>0, 4=>0, 5=>0];
@@ -69,201 +84,283 @@ while($row = $result_stats->fetch_assoc()) {
     $total_reviews += $row['count'];
     $total_score += ($row['rating'] * $row['count']);
 }
-$avg_rating = $total_reviews > 0 ? round($total_score / $total_reviews, 1) : 5.0;
+$average_rating = $total_reviews > 0 ? round($total_score / $total_reviews, 1) : 5.0;
+
+$sql_comments = "SELECT c.*, u.fullname FROM comments c JOIN users u ON c.user_id = u.id WHERE c.product_id = $product_id ORDER BY c.created_at DESC";
+$result_comments = $conn->query($sql_comments);
 ?>
 
 <main class="container py-5">
-    <!-- KHU VỰC TRÊN: ẢNH VÀ THÔNG TIN MUA HÀNG -->
+    <!-- PHẦN TRÊN: THÔNG TIN SẢN PHẨM (GIỮ NGUYÊN) -->
     <div class="product-detail-container">
         <div class="row">
-            <!-- CỘT TRÁI: GALLERY ẢNH -->
             <div class="col-md-6">
-                <!-- Ảnh chính -->
                 <div class="main-image-container">
-                    <img id="mainImg" src="images/<?php echo htmlspecialchars($product['image']); ?>" alt="Ảnh sản phẩm">
+                    <img id="mainImg" src="images/<?php echo htmlspecialchars($image_list[0]); ?>" alt="Ảnh sản phẩm">
                 </div>
-                <!-- Thumbnails (Giả lập bằng cách lặp lại ảnh chính) -->
-                <div class="thumbnail-container mt-3">
-                    <img class="thumbnail active" src="images/<?php echo htmlspecialchars($product['image']); ?>" onclick="changeImage(this)">
-                    <!-- Giả lập thêm vài ảnh khác (bạn có thể thay bằng ảnh thật nếu có) -->
-                    <img class="thumbnail" src="https://images.pexels.com/photos/1695052/pexels-photo-1695052.jpeg?auto=compress&cs=tinysrgb&w=200" onclick="changeImage(this)">
-                    <img class="thumbnail" src="https://images.pexels.com/photos/302899/pexels-photo-302899.jpeg?auto=compress&cs=tinysrgb&w=200" onclick="changeImage(this)">
-                    <img class="thumbnail" src="https://images.pexels.com/photos/312418/pexels-photo-312418.jpeg?auto=compress&cs=tinysrgb&w=200" onclick="changeImage(this)">
+                <?php if (count($image_list) > 1): ?>
+                <div class="thumbnail-container">
+                    <?php foreach($image_list as $index => $img_file): ?>
+                        <img class="thumbnail <?php echo ($index === 0) ? 'active' : ''; ?>" 
+                             src="images/<?php echo htmlspecialchars($img_file); ?>" onclick="changeImage(this)">
+                    <?php endforeach; ?>
                 </div>
+                <?php endif; ?>
             </div>
 
-            <!-- CỘT PHẢI: THÔNG TIN & NÚT MUA -->
             <div class="col-md-6 mt-4 mt-md-0">
-                <div class="d-flex justify-content-between align-items-start">
-                    <h1 class="product-title"><?php echo htmlspecialchars($product['name']); ?></h1>
-                    <?php if($product['original_price'] > $product['price']): ?>
-                        <span class="badge bg-danger rounded-pill">-<?php echo round((($product['original_price'] - $product['price'])/$product['original_price'])*100); ?>%</span>
-                    <?php endif; ?>
-                </div>
-
-                <div class="d-flex align-items-center mb-3">
-                    <div class="text-warning me-2">
-                        <span class="fs-5 fw-bold"><?php echo $avg_rating; ?></span> ★★★★★
-                    </div>
-                    <span class="text-muted">(<?php echo $total_reviews; ?> đánh giá)</span>
-                    <span class="text-muted mx-2">|</span>
-                    <span class="text-success">Đã bán <?php echo rand(100, 999); ?>+</span>
+                <h1 class="product-title"><?php echo htmlspecialchars($product['name']); ?></h1>
+                <div class="mb-3 d-flex align-items-center">
+                     <span class="text-warning fs-5 me-2">
+                        <?php echo $average_rating; ?> 
+                        <?php for($i=1; $i<=5; $i++) echo ($i <= round($average_rating)) ? '★' : '☆'; ?>
+                     </span> 
+                     <span class="text-muted border-start ps-2"><?php echo $total_reviews; ?> Đánh giá</span>
                 </div>
 
                 <div class="price-group mb-4">
                     <span class="product-price-large"><?php echo number_format($product['price']); ?> ₫</span>
-                    <?php if($product['original_price'] > 0): ?>
-                        <span class="original-price fs-5"><?php echo number_format($product['original_price']); ?> ₫</span>
+                    <?php if($product['original_price'] > $product['price']): ?>
+                        <span class="original-price fs-5 text-muted text-decoration-line-through ms-3">
+                            <?php echo number_format($product['original_price']); ?> ₫
+                        </span>
+                        <span class="badge bg-danger ms-2">-<?php echo round((($product['original_price'] - $product['price'])/$product['original_price'])*100); ?>%</span>
                     <?php endif; ?>
                 </div>
 
-                <div class="product-meta">
-                    <p><i class="bi bi-check-circle-fill text-success"></i> Hàng chính hãng 100%</p>
-                    <p><i class="bi bi-truck text-primary"></i> Miễn phí vận chuyển cho đơn từ 500k</p>
+                <div class="product-meta mb-4">
+                    <p class="mb-2"><i class="bi bi-check-circle-fill text-success"></i> Tình trạng: <strong>Còn hàng</strong></p>
+                    <p class="mb-2"><i class="bi bi-truck text-coffee"></i> Vận chuyển: <strong>Miễn phí cho đơn từ 500k</strong></p>
                 </div>
+                
+                <p class="text-muted mb-4"><?php echo mb_strimwidth(strip_tags($product['description']), 0, 150, "..."); ?></p>
 
-                <!-- FORM MUA HÀNG -->
-                <form method="POST" class="d-flex gap-3 align-items-center mt-4">
-                    <div class="input-group" style="width: 130px;">
+                <form method="POST" class="d-flex gap-3 align-items-center">
+                    <div class="input-group" style="width: 140px;">
                         <button class="btn btn-outline-secondary" type="button" onclick="decreaseQty()">-</button>
-                        <input type="number" name="quantity" id="qtyInput" class="form-control text-center" value="1" min="1">
+                        <input type="number" name="quantity" id="qtyInput" class="form-control text-center fw-bold" value="1" min="1">
                         <button class="btn btn-outline-secondary" type="button" onclick="increaseQty()">+</button>
                     </div>
-                    <button type="submit" name="add_to_cart" class="btn btn-primary btn-lg flex-grow-1">
-                        <i class="bi bi-cart-plus-fill"></i> Thêm vào giỏ hàng
-                    </button>
+                    <button type="submit" name="add_to_cart" class="btn btn-primary btn-lg flex-grow-1 shadow-sm">Thêm vào giỏ hàng</button>
                 </form>
             </div>
         </div>
     </div>
 
-    <!-- KHU VỰC DƯỚI: TAB THÔNG TIN & ĐÁNH GIÁ -->
-    <div class="product-detail-container">
+    <!-- PHẦN DƯỚI: TAB MÔ TẢ & ĐÁNH GIÁ -->
+    <div class="product-detail-container mt-4">
         <ul class="nav nav-tabs mb-4" id="myTab" role="tablist">
-            <li class="nav-item">
-                <button class="nav-link active" id="desc-tab" data-bs-toggle="tab" data-bs-target="#desc" type="button">Thông tin sản phẩm</button>
-            </li>
-            <li class="nav-item">
-                <button class="nav-link" id="review-tab" data-bs-toggle="tab" data-bs-target="#review" type="button">Đánh giá (<?php echo $total_reviews; ?>)</button>
-            </li>
+            <li class="nav-item"><button class="nav-link active" data-bs-toggle="tab" data-bs-target="#desc">Mô tả chi tiết</button></li>
+            <li class="nav-item"><button class="nav-link" data-bs-toggle="tab" data-bs-target="#review">Đánh giá (<?php echo $total_reviews; ?>)</button></li>
         </ul>
 
-        <div class="tab-content" id="myTabContent">
-            <!-- TAB 1: MÔ TẢ -->
+        <div class="tab-content">
+            <!-- TAB MÔ TẢ (GIỮ NGUYÊN) -->
             <div class="tab-pane fade show active" id="desc">
-                <h4>Mô tả chi tiết</h4>
-                <p class="lead"><?php echo nl2br(htmlspecialchars($product['description'])); ?></p>
-                <hr>
-                <p><strong>Xuất xứ:</strong> Việt Nam</p>
-                <p><strong>Thương hiệu:</strong> Cà Phê Việt</p>
-                <p><strong>Hạn sử dụng:</strong> 12 tháng kể từ ngày sản xuất</p>
-                <p><strong>Hướng dẫn bảo quản:</strong> Để nơi khô ráo, thoáng mát, tránh ánh nắng trực tiếp.</p>
+                <h5 class="text-coffee border-start border-4 border-coffee ps-2 fw-bold">Chi tiết sản phẩm</h5>
+                <div class="content-text mb-5 mt-3">
+                    <?php echo !empty($product['description']) ? nl2br(htmlspecialchars($product['description'])) : "<p class='text-muted'>Đang cập nhật...</p>"; ?>
+                </div>
+                <div class="row bg-light p-4 rounded-3">
+                    <div class="col-md-6">
+                        <h5 class="text-coffee fw-bold mb-3">Thông số sản phẩm</h5>
+                        <table class="table table-borderless m-0">
+                            <tbody>
+                                <tr><td class="text-muted" width="35%">Thương hiệu:</td><td class="fw-bold">Cà Phê Việt</td></tr>
+                                <tr><td class="text-muted">Xuất xứ:</td><td>Việt Nam</td></tr>
+                                <tr><td class="text-muted">Loại:</td><td><?php echo htmlspecialchars($product['category']); ?></td></tr>
+                                <tr><td class="text-muted">Hạn sử dụng:</td><td>12 tháng</td></tr>
+                            </tbody>
+                        </table>
+                    </div>
+                    <div class="col-md-6">
+                        <h5 class="text-coffee fw-bold mb-3">Hướng dẫn sử dụng</h5>
+                        <ul class="list-unstyled">
+                            <li class="mb-2"><i class="bi bi-check2-circle text-coffee"></i> <strong>Pha phin:</strong> Tráng phin, cho 20g cà phê, ủ 20ml nước sôi.</li>
+                            <li class="mb-2"><i class="bi bi-check2-circle text-coffee"></i> <strong>Pha máy:</strong> Nén lực vừa đủ, chiết xuất 25-30ml espresso.</li>
+                        </ul>
+                    </div>
+                </div>
             </div>
 
-            <!-- TAB 2: ĐÁNH GIÁ (DESIGN CHUẨN E-COM) -->
+            <!-- TAB ĐÁNH GIÁ (UPDATED UI/UX) -->
             <div class="tab-pane fade" id="review">
-                <div class="row">
-                    <!-- Cột Trái: Tổng quan -->
-                    <div class="col-md-4 mb-4">
-                        <div class="review-summary">
-                            <div class="average-rating"><?php echo $avg_rating; ?>/5</div>
-                            <div class="text-warning mb-2">★★★★★</div>
-                            <div class="text-muted mb-3"><?php echo $total_reviews; ?> nhận xét</div>
-                            
-                            <!-- Progress Bars -->
-                            <?php for($i=5; $i>=1; $i--): 
-                                $percent = $total_reviews > 0 ? ($star_counts[$i] / $total_reviews) * 100 : 0;
+                <!-- 1. DASHBOARD THỐNG KÊ -->
+                <div class="review-dashboard">
+                    <div class="row align-items-center">
+                        <!-- Điểm số -->
+                        <div class="col-md-4 border-end d-flex flex-column align-items-center justify-content-center">
+                            <div class="text-muted mb-1 fw-bold">Đánh giá trung bình</div>
+                            <div class="score-num" style="font-size: 4rem;"><?php echo $average_rating; ?></div>
+                            <div class="text-warning fs-4 mb-2">
+                                <?php for($i=1; $i<=5; $i++) echo ($i <= round($average_rating)) ? '★' : '☆'; ?>
+                            </div>
+                            <div class="text-muted small"><?php echo $total_reviews; ?> nhận xét</div>
+                        </div>
+                        <!-- Thanh Progress Bar (Đã fix layout) -->
+                        <div class="col-md-8 ps-md-5 mt-3 mt-md-0">
+                            <?php for($star=5; $star>=1; $star--): 
+                                $percent = $total_reviews > 0 ? ($star_counts[$star] / $total_reviews) * 100 : 0;
                             ?>
-                            <div class="review-row">
-                                <span class="me-2"><?php echo $i; ?> sao</span>
-                                <div class="progress flex-grow-1">
-                                    <div class="progress-bar" style="width: <?php echo $percent; ?>%"></div>
+                            <div class="rating-row">
+                                <div class="rating-label"><?php echo $star; ?> sao</div>
+                                <div class="progress progress-container">
+                                    <div class="progress-bar progress-bar-coffee" style="width: <?php echo $percent; ?>%"></div>
                                 </div>
-                                <span class="ms-2 text-muted small"><?php echo $star_counts[$i]; ?></span>
+                                <div class="rating-count"><?php echo $star_counts[$star]; ?></div>
                             </div>
                             <?php endfor; ?>
                         </div>
-                        
-                        <!-- Form Viết đánh giá -->
-                        <div class="mt-4">
-                            <h5>Gửi đánh giá của bạn</h5>
+                    </div>
+                </div>
+
+                <div class="row mt-5">
+                    <!-- 2. FORM ĐÁNH GIÁ (UPDATED UI) -->
+                    <div class="col-lg-4 mb-5">
+                        <div class="review-form-box sticky-top" style="top: 90px; z-index: 1;">
+                            <h5 class="fw-bold mb-4">Viết đánh giá của bạn</h5>
+                            
                             <?php if(isset($_SESSION['user_id'])): ?>
-                            <form method="POST">
-                                <div class="mb-2">
-                                    <select name="rating" class="form-select">
-                                        <option value="5">★★★★★ (Tuyệt vời)</option>
-                                        <option value="4">★★★★ (Tốt)</option>
-                                        <option value="3">★★★ (Bình thường)</option>
-                                        <option value="2">★★ (Kém)</option>
-                                        <option value="1">★ (Tệ)</option>
-                                    </select>
-                                </div>
-                                <textarea name="content" class="form-control mb-2" rows="3" placeholder="Nhập nhận xét..."></textarea>
-                                <button type="submit" name="submit_review" class="btn btn-primary w-100">Gửi đánh giá</button>
-                            </form>
+                                <form method="POST" id="reviewForm">
+                                    <!-- Chọn sao bằng Click -->
+                                    <div class="mb-4">
+                                        <label class="form-label fw-bold small text-muted text-uppercase">1. Chọn mức độ hài lòng</label>
+                                        <div class="star-rating-group" id="starRatingGroup">
+                                            <i class="bi bi-star-fill star-icon" data-value="1"></i>
+                                            <i class="bi bi-star-fill star-icon" data-value="2"></i>
+                                            <i class="bi bi-star-fill star-icon" data-value="3"></i>
+                                            <i class="bi bi-star-fill star-icon" data-value="4"></i>
+                                            <i class="bi bi-star-fill star-icon" data-value="5"></i>
+                                        </div>
+                                        <!-- Input ẩn để chứa giá trị sao gửi đi -->
+                                        <input type="hidden" name="rating" id="ratingInput" value="5">
+                                        <div class="mt-2 small text-coffee fw-bold" id="ratingText">Tuyệt vời</div>
+                                    </div>
+
+                                    <!-- Textarea hiện đại -->
+                                    <div class="mb-4">
+                                        <label class="form-label fw-bold small text-muted text-uppercase">2. Nội dung đánh giá</label>
+                                        <textarea name="content" class="form-control modern-textarea" rows="5" placeholder="Chất lượng sản phẩm thế nào? Giao hàng có nhanh không?..." required></textarea>
+                                    </div>
+                                    <button type="submit" name="submit_review" class="btn btn-primary w-100 py-2 fw-bold rounded-pill shadow-sm">Gửi đánh giá ngay</button>
+                                </form>
                             <?php else: ?>
-                                <a href="login.php" class="btn btn-outline-primary w-100">Đăng nhập để đánh giá</a>
+                                <div class="text-center py-4 bg-light rounded-3 border border-dashed">
+                                    <p class="text-muted mb-3">Bạn cần đăng nhập để đánh giá sản phẩm này.</p>
+                                    <a href="login.php" class="btn btn-outline-primary px-4 rounded-pill">Đăng nhập / Đăng ký</a>
+                                </div>
                             <?php endif; ?>
                         </div>
                     </div>
 
-                    <!-- Cột Phải: Danh sách bình luận -->
-                    <div class="col-md-8">
-                        <?php
-                        $stmt_cmt = $conn->prepare("SELECT c.*, u.fullname FROM comments c JOIN users u ON c.user_id = u.id WHERE c.product_id = ? ORDER BY c.created_at DESC");
-                        $stmt_cmt->bind_param("i", $product_id);
-                        $stmt_cmt->execute();
-                        $result_cmt = $stmt_cmt->get_result();
-
-                        if ($result_cmt->num_rows > 0):
-                            while ($cmt = $result_cmt->fetch_assoc()):
-                        ?>
-                            <div class="user-review">
-                                <div class="d-flex">
-                                    <div class="user-avatar"><?php echo substr($cmt['fullname'], 0, 1); ?></div>
-                                    <div>
-                                        <div class="fw-bold"><?php echo htmlspecialchars($cmt['fullname']); ?></div>
-                                        <div class="text-warning small">
-                                            <?php for($k=0; $k<5; $k++) echo ($k < $cmt['rating']) ? '★' : '☆'; ?>
+                    <!-- 3. DANH SÁCH REVIEW -->
+                    <div class="col-lg-8 ps-lg-5">
+                        <h5 class="mb-4 fw-bold">Khách hàng nhận xét (<?php echo $total_reviews; ?>)</h5>
+                        <?php if($result_comments->num_rows > 0): ?>
+                            <?php while($cmt = $result_comments->fetch_assoc()): ?>
+                                <div class="review-item">
+                                    <div class="d-flex">
+                                        <div class="user-avatar-circle shadow-sm">
+                                            <?php echo strtoupper(substr($cmt['fullname'], 0, 1)); ?>
                                         </div>
-                                        <div class="text-muted small mb-2"><?php echo date('d/m/Y H:i', strtotime($cmt['created_at'])); ?> | Phân loại: Túi 500g</div>
-                                        <p class="mb-0"><?php echo nl2br(htmlspecialchars($cmt['content'])); ?></p>
+                                        <div class="flex-grow-1">
+                                            <div class="d-flex justify-content-between align-items-center mb-1">
+                                                <div class="fw-bold text-dark"><?php echo htmlspecialchars($cmt['fullname']); ?></div>
+                                                <div class="review-date text-muted small"><?php echo date('d/m/Y', strtotime($cmt['created_at'])); ?></div>
+                                            </div>
+                                            <div class="text-warning small mb-2">
+                                                <?php for($k=1; $k<=5; $k++) echo ($k <= $cmt['rating']) ? '★' : '☆'; ?>
+                                                <span class="text-success ms-2 fst-italic fw-normal bg-light px-2 py-1 rounded border" style="font-size: 0.75rem;"><i class="bi bi-check-circle-fill"></i> Đã mua hàng</span>
+                                            </div>
+                                            <div class="review-content">
+                                                <?php echo nl2br(htmlspecialchars($cmt['content'])); ?>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
+                            <?php endwhile; ?>
+                        <?php else: ?>
+                            <div class="text-center py-5 bg-light rounded-3">
+                                <i class="bi bi-chat-square-quote fs-1 text-muted mb-3"></i>
+                                <p class="text-muted">Chưa có đánh giá nào. Hãy là người đầu tiên chia sẻ cảm nhận!</p>
                             </div>
-                        <?php endwhile; else: ?>
-                            <p class="text-center text-muted py-5">Chưa có đánh giá nào. Hãy là người đầu tiên!</p>
                         <?php endif; ?>
                     </div>
                 </div>
-            </div>
+            </div> 
         </div>
     </div>
 </main>
 
-<!-- JAVASCRIPT CHO TRANG CHI TIẾT -->
+<!-- JAVASCRIPT XỬ LÝ -->
 <script>
-    // Hàm đổi ảnh khi click thumbnail
-    function changeImage(element) {
-        document.getElementById('mainImg').src = element.src;
-        // Xóa class active cũ
-        document.querySelectorAll('.thumbnail').forEach(thumb => thumb.classList.remove('active'));
-        // Thêm class active mới
-        element.classList.add('active');
+    // 1. Logic chọn sao (Star Rating)
+    const stars = document.querySelectorAll('.star-icon');
+    const ratingInput = document.getElementById('ratingInput');
+    const ratingText = document.getElementById('ratingText');
+    const ratingLabels = {
+        1: "Tệ",
+        2: "Không hài lòng",
+        3: "Bình thường",
+        4: "Hài lòng",
+        5: "Tuyệt vời"
+    };
+
+    if(stars.length > 0) {
+        // Mặc định chọn 5 sao
+        highlightStars(5);
+
+        stars.forEach(star => {
+            // Xử lý khi click
+            star.addEventListener('click', function() {
+                const value = this.getAttribute('data-value');
+                ratingInput.value = value;
+                highlightStars(value);
+                ratingText.innerText = ratingLabels[value];
+            });
+
+            // Xử lý khi hover
+            star.addEventListener('mouseover', function() {
+                const value = this.getAttribute('data-value');
+                highlightStars(value);
+            });
+        });
+
+        // Khi chuột rời khỏi vùng sao, quay lại giá trị đã chọn
+        document.getElementById('starRatingGroup').addEventListener('mouseleave', function() {
+            highlightStars(ratingInput.value);
+        });
     }
 
-    // Hàm tăng giảm số lượng
-    function increaseQty() {
-        var input = document.getElementById('qtyInput');
-        input.value = parseInt(input.value) + 1;
+    function highlightStars(count) {
+        stars.forEach(star => {
+            const value = star.getAttribute('data-value');
+            if(value <= count) {
+                star.classList.add('selected');
+                star.classList.remove('bi-star');
+                star.classList.add('bi-star-fill');
+            } else {
+                star.classList.remove('selected');
+                star.classList.remove('bi-star-fill');
+                star.classList.add('bi-star'); // Chuyển thành sao rỗng
+            }
+        });
     }
 
-    function decreaseQty() {
-        var input = document.getElementById('qtyInput');
-        if (parseInt(input.value) > 1) {
-            input.value = parseInt(input.value) - 1;
-        }
+    // 2. Các script cũ
+    function changeImage(el) {
+        document.getElementById('mainImg').src = el.src;
+        document.querySelectorAll('.thumbnail').forEach(t => t.classList.remove('active'));
+        el.classList.add('active');
+    }
+    function increaseQty() { document.getElementById('qtyInput').value++; }
+    function decreaseQty() { 
+        var el = document.getElementById('qtyInput'); 
+        if(el.value > 1) el.value--; 
     }
 </script>
+
+<!-- THÊM ICON BOOTSTRAP NẾU CHƯA CÓ (Thường đã có trong header) -->
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 
 <?php require_once 'includes/footer.php'; ?>

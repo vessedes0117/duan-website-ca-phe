@@ -16,9 +16,7 @@ body {
     background-color: var(--color-background-warm);
     color: var(--color-text);
 }
-main {
-    padding-top: 70px; /* Thêm padding cho thẻ main */
-}
+
 h1, h2, h3, h4, h5, h6, .navbar-brand {
     font-family: var(--font-display);
     font-weight: 700;
@@ -265,67 +263,236 @@ h1, h2, h3, h4, h5, h6, .navbar-brand {
     border-color: var(--color-primary);
     color: white;
 }
-/* --- STYLE.CSS - PHIÊN BẢN NÂNG CẤP --- */
-:root {
-    --color-primary: #d97706; /* amber-600 */
-    --color-primary-dark: #b45309; /* amber-700 */
-    --color-text: #44403c; /* stone-700 */
-    --color-bg-warm: #f5f0e9;
+
+/* --- TRANG CHI TIẾT SẢN PHẨM (FIXED) --- */
+/* Đẩy nội dung xuống để không bị Header che */
+main {
+    padding-top: 100px !important; 
 }
 
-body { font-family: 'Open Sans', sans-serif; background-color: var(--color-bg-warm); color: var(--color-text); }
-h1, h2, h3, h4, h5, h6, .navbar-brand { font-family: 'Inter', sans-serif; font-weight: 700; }
+.product-detail-container {
+    background: white;
+    border-radius: 1rem;
+    padding: 2rem;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    margin-bottom: 2rem; /* Khoảng cách dưới */
+}
 
-/* HEADER & FOOTER (GIỮ NGUYÊN CẤU TRÚC CŨ) */
-.navbar { background-color: rgba(255, 255, 255, 0.95) !important; backdrop-filter: blur(10px); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
-.navbar-brand { font-size: 1.5rem; color: var(--color-primary-dark) !important; }
-.site-footer { background-color: #1c1917; color: #d6d3d1; padding: 4rem 0 2rem 0; font-size: 0.9rem; }
-.site-footer a { color: #d6d3d1; text-decoration: none; }
-.site-footer a:hover { color: white; }
-
-/* BUTTONS */
-.btn-primary { background-color: var(--color-primary); border-color: var(--color-primary); border-radius: 50px; font-weight: 600; transition: 0.3s; }
-.btn-primary:hover { background-color: var(--color-primary-dark); border-color: var(--color-primary-dark); transform: translateY(-2px); }
-.btn-outline-primary { color: var(--color-primary); border-color: var(--color-primary); border-radius: 50px; }
-.btn-outline-primary:hover { background-color: var(--color-primary); border-color: var(--color-primary); color: white; }
-
-/* SẢN PHẨM (GRID) */
-.product-card { border: 1px solid #e5e7eb; border-radius: 0.75rem; overflow: hidden; background: white; transition: 0.3s; height: 100%; display: flex; flex-direction: column; }
-.product-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
-.product-card .card-body { padding: 1.5rem; display: flex; flex-direction: column; flex-grow: 1; }
-.price-group { margin-bottom: 1rem; }
-.current-price { font-size: 1.2rem; font-weight: 700; color: var(--color-primary); }
-.original-price { font-size: 0.9rem; text-decoration: line-through; color: #9ca3af; margin-left: 5px; }
-.rating-stars { color: #f59e0b; font-size: 0.9rem; margin-bottom: 0.5rem; }
-
-/* --- TRANG CHI TIẾT SẢN PHẨM (NEW) --- */
-.product-detail-container { background: white; border-radius: 1rem; padding: 2rem; box-shadow: 0 5px 20px rgba(0,0,0,0.05); margin-top: 2rem; }
-
-/* GALLERY ẢNH */
+/* KHUNG ẢNH CHÍNH */
 .main-image-container {
     width: 100%;
-    height: 400px; /* Giới hạn chiều cao ảnh */
-    display: flex; align-items: center; justify-content: center;
-    border: 1px solid #eee; border-radius: 10px; overflow: hidden; margin-bottom: 1rem;
+    height: 450px; /* Chiều cao cố định */
+    background-color: #fff;
+    border: 1px solid #eee;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    margin-bottom: 1rem;
+    position: relative;
 }
-.main-image-container img { max-width: 100%; max-height: 100%; object-fit: contain; }
-.thumbnail-container { display: flex; gap: 10px; overflow-x: auto; }
-.thumbnail { width: 80px; height: 80px; border: 2px solid transparent; border-radius: 8px; cursor: pointer; object-fit: cover; opacity: 0.6; transition: 0.3s; }
-.thumbnail:hover, .thumbnail.active { border-color: var(--color-primary); opacity: 1; }
 
-/* THÔNG TIN CHI TIẾT BÊN PHẢI */
-.product-title { font-size: 2rem; color: var(--color-text); margin-bottom: 0.5rem; }
-.product-price-large { font-size: 2.5rem; font-weight: 700; color: var(--color-primary); }
-.product-meta { font-size: 0.9rem; color: #666; margin-bottom: 1.5rem; }
-.quantity-input { max-width: 100px; text-align: center; font-weight: bold; }
+.main-image-container img {
+    max-width: 100%;
+    max-height: 100%;
+    object-fit: contain; /* Giữ tỷ lệ ảnh, không bị méo */
+    display: block;
+}
 
-/* PHẦN ĐÁNH GIÁ & MÔ TẢ (UX E-COMMERCE) */
-.nav-tabs .nav-link { color: #666; font-weight: 600; border: none; border-bottom: 3px solid transparent; }
-.nav-tabs .nav-link.active { color: var(--color-primary); border-bottom-color: var(--color-primary); background: none; }
-.review-summary { background: #f9fafb; padding: 2rem; border-radius: 10px; text-align: center; }
-.average-rating { font-size: 3rem; font-weight: 700; color: var(--color-primary); line-height: 1; }
-.progress { height: 8px; margin-bottom: 0; }
-.progress-bar { background-color: var(--color-primary); }
-.review-row { display: flex; align-items: center; margin-bottom: 5px; font-size: 0.9rem; }
-.user-review { border-bottom: 1px solid #eee; padding: 1.5rem 0; }
-.user-avatar { width: 40px; height: 40px; background: #ddd; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #666; margin-right: 10px; }
+/* KHUNG THUMBNAIL (ẢNH NHỎ) */
+.thumbnail-container {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto; /* Cho phép cuộn ngang nếu nhiều ảnh */
+    padding-bottom: 5px;
+    justify-content: center; /* Căn giữa các ảnh nhỏ */
+}
+
+.thumbnail {
+    width: 80px !important; /* Bắt buộc chiều rộng */
+    height: 80px !important; /* Bắt buộc chiều cao */
+    border: 2px solid #eee;
+    border-radius: 8px;
+    cursor: pointer;
+    object-fit: cover; /* Cắt ảnh cho vừa khung vuông */
+    opacity: 0.6;
+    transition: 0.3s;
+    background-color: #fff;
+}
+
+.thumbnail:hover, .thumbnail.active {
+    border-color: var(--color-primary);
+    opacity: 1;
+    transform: scale(1.05);
+}
+
+/* THÔNG TIN BÊN PHẢI */
+.product-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: var(--color-text);
+    line-height: 1.2;
+}
+
+.product-price-large {
+    font-size: 2.2rem;
+    font-weight: 700;
+    color: var(--color-primary);
+}
+
+/* MOBILE RESPONSIVE */
+@media (max-width: 768px) {
+    .main-image-container {
+        height: 300px;
+    }
+    .product-title {
+        font-size: 1.5rem;
+        margin-top: 1rem;
+    }
+}
+/* --- CẬP NHẬT GIAO DIỆN CHI TIẾT & ĐÁNH GIÁ (MODERN UI) --- */
+
+/* 1. Màu sắc chủ đạo (Ghi đè màu xanh mặc định) */
+.text-coffee { color: #b45309 !important; } /* Màu nâu cam đậm */
+.border-coffee { border-color: #d97706 !important; }
+
+/* 2. Bảng Tổng quan đánh giá */
+.review-dashboard {
+    background-color: #fff7ed; /* Màu nền kem nhạt */
+    border: 1px solid #ffedd5;
+    border-radius: 12px;
+    padding: 2rem;
+    margin-bottom: 2rem;
+}
+.score-box {
+    text-align: center;
+    border-right: 1px solid #e5e7eb;
+}
+.score-num {
+    font-size: 3.5rem;
+    font-weight: 800;
+    color: #d97706;
+    line-height: 1;
+}
+.progress {
+    height: 8px;
+    border-radius: 4px;
+    background-color: #e5e7eb;
+    margin-bottom: 0;
+}
+.progress-bar-coffee {
+    background-color: #d97706;
+}
+
+/* 3. Form đánh giá */
+.review-form-box {
+    background: #fff;
+    border: 1px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 1.5rem;
+    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+}
+
+/* 4. Card đánh giá của khách (Avatar tròn) */
+.review-item {
+    border-bottom: 1px solid #f3f4f6;
+    padding: 1.5rem 0;
+}
+.review-item:last-child { border-bottom: none; }
+
+.user-avatar-circle {
+    width: 45px;
+    height: 45px;
+    background-color: #f5f5f4;
+    color: #57534e;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: 700;
+    font-size: 1.1rem;
+    margin-right: 1rem;
+}
+.review-date { font-size: 0.85rem; color: #9ca3af; }
+.review-content { color: #4b5563; margin-top: 0.5rem; line-height: 1.6; }
+
+/* Mobile responsive */
+@media (max-width: 768px) {
+    .score-box { border-right: none; border-bottom: 1px solid #e5e7eb; padding-bottom: 1rem; margin-bottom: 1rem; }
+}
+/* --- FIX GIAO DIỆN ĐÁNH GIÁ & SAO TƯƠNG TÁC --- */
+
+/* 1. Fix lỗi vỡ dòng Progress Bar */
+.rating-row {
+    display: flex;
+    align-items: center;
+    margin-bottom: 8px;
+}
+.rating-label {
+    width: 45px; /* Cố định chiều rộng để không bị xuống dòng */
+    flex-shrink: 0; /* Không cho phép co lại */
+    font-weight: 600;
+    font-size: 0.9rem;
+    color: #555;
+}
+.rating-count {
+    width: 35px;
+    flex-shrink: 0;
+    text-align: right;
+    font-size: 0.85rem;
+    color: #888;
+}
+.progress-container {
+    flex-grow: 1; /* Thanh bar tự giãn hết cỡ */
+    margin: 0 10px;
+}
+
+/* 2. Sao tương tác (Clickable Stars) */
+.star-rating-group {
+    display: flex;
+    gap: 5px;
+    font-size: 1.8rem;
+    cursor: pointer;
+}
+.star-icon {
+    color: #d1d5db; /* Màu xám mặc định */
+    transition: color 0.2s ease, transform 0.1s;
+}
+.star-icon:hover {
+    transform: scale(1.1);
+}
+/* Class này sẽ được JS thêm vào khi sao được chọn */
+.star-icon.selected, 
+.star-icon.hovered { 
+    color: #f59e0b; /* Màu vàng */
+}
+
+/* 3. Modern Textarea (Ô nhập liệu hiện đại) */
+.modern-textarea {
+    background-color: #f9fafb;
+    border: 2px solid #e5e7eb;
+    border-radius: 12px;
+    padding: 1rem;
+    font-size: 0.95rem;
+    transition: all 0.3s ease;
+    resize: none; /* Không cho kéo giãn lung tung */
+}
+.modern-textarea:focus {
+    background-color: #fff;
+    border-color: #d97706; /* Viền màu cam cà phê khi focus */
+    box-shadow: 0 4px 15px rgba(217, 119, 6, 0.1);
+    outline: none;
+}
+.modern-textarea::placeholder {
+    color: #9ca3af;
+    font-style: italic;
+}
+
+/* 4. Tinh chỉnh lại Dashboard cho gọn */
+.review-dashboard {
+    padding: 1.5rem; /* Giảm padding cho đỡ to */
+}
+.score-box {
+    padding-right: 1rem;
+}
