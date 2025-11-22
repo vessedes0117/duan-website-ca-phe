@@ -265,3 +265,67 @@ h1, h2, h3, h4, h5, h6, .navbar-brand {
     border-color: var(--color-primary);
     color: white;
 }
+/* --- STYLE.CSS - PHIÊN BẢN NÂNG CẤP --- */
+:root {
+    --color-primary: #d97706; /* amber-600 */
+    --color-primary-dark: #b45309; /* amber-700 */
+    --color-text: #44403c; /* stone-700 */
+    --color-bg-warm: #f5f0e9;
+}
+
+body { font-family: 'Open Sans', sans-serif; background-color: var(--color-bg-warm); color: var(--color-text); }
+h1, h2, h3, h4, h5, h6, .navbar-brand { font-family: 'Inter', sans-serif; font-weight: 700; }
+
+/* HEADER & FOOTER (GIỮ NGUYÊN CẤU TRÚC CŨ) */
+.navbar { background-color: rgba(255, 255, 255, 0.95) !important; backdrop-filter: blur(10px); box-shadow: 0 2px 4px rgba(0,0,0,0.05); }
+.navbar-brand { font-size: 1.5rem; color: var(--color-primary-dark) !important; }
+.site-footer { background-color: #1c1917; color: #d6d3d1; padding: 4rem 0 2rem 0; font-size: 0.9rem; }
+.site-footer a { color: #d6d3d1; text-decoration: none; }
+.site-footer a:hover { color: white; }
+
+/* BUTTONS */
+.btn-primary { background-color: var(--color-primary); border-color: var(--color-primary); border-radius: 50px; font-weight: 600; transition: 0.3s; }
+.btn-primary:hover { background-color: var(--color-primary-dark); border-color: var(--color-primary-dark); transform: translateY(-2px); }
+.btn-outline-primary { color: var(--color-primary); border-color: var(--color-primary); border-radius: 50px; }
+.btn-outline-primary:hover { background-color: var(--color-primary); border-color: var(--color-primary); color: white; }
+
+/* SẢN PHẨM (GRID) */
+.product-card { border: 1px solid #e5e7eb; border-radius: 0.75rem; overflow: hidden; background: white; transition: 0.3s; height: 100%; display: flex; flex-direction: column; }
+.product-card:hover { transform: translateY(-5px); box-shadow: 0 15px 30px rgba(0,0,0,0.1); }
+.product-card .card-body { padding: 1.5rem; display: flex; flex-direction: column; flex-grow: 1; }
+.price-group { margin-bottom: 1rem; }
+.current-price { font-size: 1.2rem; font-weight: 700; color: var(--color-primary); }
+.original-price { font-size: 0.9rem; text-decoration: line-through; color: #9ca3af; margin-left: 5px; }
+.rating-stars { color: #f59e0b; font-size: 0.9rem; margin-bottom: 0.5rem; }
+
+/* --- TRANG CHI TIẾT SẢN PHẨM (NEW) --- */
+.product-detail-container { background: white; border-radius: 1rem; padding: 2rem; box-shadow: 0 5px 20px rgba(0,0,0,0.05); margin-top: 2rem; }
+
+/* GALLERY ẢNH */
+.main-image-container {
+    width: 100%;
+    height: 400px; /* Giới hạn chiều cao ảnh */
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid #eee; border-radius: 10px; overflow: hidden; margin-bottom: 1rem;
+}
+.main-image-container img { max-width: 100%; max-height: 100%; object-fit: contain; }
+.thumbnail-container { display: flex; gap: 10px; overflow-x: auto; }
+.thumbnail { width: 80px; height: 80px; border: 2px solid transparent; border-radius: 8px; cursor: pointer; object-fit: cover; opacity: 0.6; transition: 0.3s; }
+.thumbnail:hover, .thumbnail.active { border-color: var(--color-primary); opacity: 1; }
+
+/* THÔNG TIN CHI TIẾT BÊN PHẢI */
+.product-title { font-size: 2rem; color: var(--color-text); margin-bottom: 0.5rem; }
+.product-price-large { font-size: 2.5rem; font-weight: 700; color: var(--color-primary); }
+.product-meta { font-size: 0.9rem; color: #666; margin-bottom: 1.5rem; }
+.quantity-input { max-width: 100px; text-align: center; font-weight: bold; }
+
+/* PHẦN ĐÁNH GIÁ & MÔ TẢ (UX E-COMMERCE) */
+.nav-tabs .nav-link { color: #666; font-weight: 600; border: none; border-bottom: 3px solid transparent; }
+.nav-tabs .nav-link.active { color: var(--color-primary); border-bottom-color: var(--color-primary); background: none; }
+.review-summary { background: #f9fafb; padding: 2rem; border-radius: 10px; text-align: center; }
+.average-rating { font-size: 3rem; font-weight: 700; color: var(--color-primary); line-height: 1; }
+.progress { height: 8px; margin-bottom: 0; }
+.progress-bar { background-color: var(--color-primary); }
+.review-row { display: flex; align-items: center; margin-bottom: 5px; font-size: 0.9rem; }
+.user-review { border-bottom: 1px solid #eee; padding: 1.5rem 0; }
+.user-avatar { width: 40px; height: 40px; background: #ddd; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: bold; color: #666; margin-right: 10px; }

@@ -1,7 +1,7 @@
 <?php require_once 'includes/header.php'; ?>
 
 <main>
-    <!-- HERO BANNER -->
+    <!-- HERO BANNER (GIỮ NGUYÊN) -->
     <section class="hero-banner text-center d-flex align-items-center">
         <div class="container">
             <h1 class="display-4">Cà Phê Việt Nam</h1>
@@ -11,7 +11,7 @@
         </div>
     </section>
 
-    <!-- SECTION SẢN PHẨM NỔI BẬT -->
+    <!-- SECTION SẢN PHẨM NỔI BẬT (ĐÃ SỬA ĐỂ CÓ LINK CHÍNH XÁC) -->
     <section id="featured-products" class="section-light">
         <div class="container">
             <div class="text-center">
@@ -20,90 +20,75 @@
             </div>
 
             <div class="row">
-                <!-- Sản phẩm 1: Cà Phê Chồn -->
-                <div class="col-md-6 col-lg-3 mb-4">
-                    <div class="product-card">
-                        <div class="product-card-img-container">
-                            <img src="images/ca-phe-chon.jpg" class="card-img-top" alt="Cà Phê Chồn">
-                            <div class="discount-badge">-18%</div>
-                        </div>
-                        <div class="card-body">
-                            <h5 class="card-title">Cà Phê Chồn Legend</h5>
-                            <p class="card-description">Hương vị độc đáo và quý hiếm bậc nhất, được mệnh danh là "vua cà phê".</p>
-                            <div class="rating-stars">★★★★★</div>
-                            <div class="price-group">
-                                <span class="current-price">990,000 đ</span>
-                                <span class="original-price">1,200,000 đ</span>
-                            </div>
-                            <a href="#" class="btn btn-primary">Thêm vào giỏ</a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Sản phẩm 2: Robusta Buôn Ma Thuột -->
-                <div class="col-md-6 col-lg-3 mb-4">
-                    <div class="product-card">
-                        <div class="product-card-img-container">
-                            <img src="images/bmt-robusta.jpg" class="card-img-top" alt="Cà phê Robusta Buôn Ma Thuột">
-                            <div class="discount-badge">-15%</div>
-                        </div>
-                        <div class="card-body">
-                            <h5 class="card-title">Robusta Buôn Ma Thuột</h5>
-                            <p class="card-description">Vị đậm đà, mạnh mẽ đặc trưng của vùng đất bazan, hàm lượng caffeine cao.</p>
-                            <div class="rating-stars">★★★★★</div>
-                            <div class="price-group">
-                                <span class="current-price">170,000 đ</span>
-                                <span class="original-price">200,000 đ</span>
-                            </div>
-                            <a href="#" class="btn btn-primary">Thêm vào giỏ</a>
-                        </div>
-                    </div>
-                </div>
-
-                <!-- Sản phẩm 3: Arabica Cầu Đất -->
-                <div class="col-md-6 col-lg-3 mb-4">
-                    <div class="product-card">
-                        <div class="product-card-img-container">
-                            <img src="images/cau-dat-arabica.jpg" class="card-img-top" alt="Cà phê Arabica Cầu Đất">
-                            <div class="discount-badge">-10%</div>
-                        </div>
-                        <div class="card-body">
-                            <h5 class="card-title">Arabica Cầu Đất</h5>
-                            <p class="card-description">Hương thơm quyến rũ, vị chua thanh tao và hậu vị ngọt ngào từ cao nguyên Đà Lạt.</p>
-                            <div class="rating-stars">★★★★☆</div>
-                            <div class="price-group">
-                                <span class="current-price">225,000 đ</span>
-                                <span class="original-price">250,000 đ</span>
-                            </div>
-                            <a href="#" class="btn btn-primary">Thêm vào giỏ</a>
-                        </div>
-                    </div>
-                </div>
+                <?php
+                // Kết nối CSDL để lấy sản phẩm thực tế
+                require_once 'includes/db_connection.php';
                 
-                <!-- Sản phẩm 4: Cà Phê Phin Giấy -->
-                <div class="col-md-6 col-lg-3 mb-4">
-                    <div class="product-card">
-                         <div class="product-card-img-container">
-                            <img src="images/phin-giay.jpg" class="card-img-top" alt="Cà Phê Phin Giấy">
-                            <div class="discount-badge">-20%</div>
-                        </div>
-                        <div class="card-body">
-                            <h5 class="card-title">Cà Phê Phin Giấy</h5>
-                            <p class="card-description">Tiện lợi cho dân văn phòng, giữ trọn hương vị cà phê phin truyền thống.</p>
-                            <div class="rating-stars">★★★★☆</div>
-                             <div class="price-group">
-                                <span class="current-price">120,000 đ</span>
-                                <span class="original-price">150,000 đ</span>
+                // Lấy 4 sản phẩm mới nhất để hiển thị
+                $sql = "SELECT * FROM products ORDER BY id DESC LIMIT 4";
+                $result = $conn->query($sql);
+
+                if ($result && $result->num_rows > 0) {
+                    while($product = $result->fetch_assoc()) {
+                        // TẠO LINK ĐẾN TRANG CHI TIẾT DỰA TRÊN ID SẢN PHẨM
+                        $product_link = "product-detail.php?id=" . $product['id'];
+
+                        // Tính toán % giảm giá
+                        $discount_percent = 0;
+                        if ($product['original_price'] > 0 && $product['original_price'] > $product['price']) {
+                            $discount_percent = round((($product['original_price'] - $product['price']) / $product['original_price']) * 100);
+                        }
+                ?>
+                        <!-- Thẻ Sản Phẩm -->
+                        <div class="col-md-6 col-lg-3 mb-4">
+                            <div class="product-card h-100 d-flex flex-column">
+                                <div class="product-card-img-container">
+                                    <!-- Link bao quanh ảnh -->
+                                    <a href="<?php echo $product_link; ?>">
+                                        <img src="images/<?php echo htmlspecialchars($product['image']); ?>" class="card-img-top" alt="<?php echo htmlspecialchars($product['name']); ?>">
+                                    </a>
+                                    <?php if ($discount_percent > 0): ?>
+                                        <div class="discount-badge">-<?php echo $discount_percent; ?>%</div>
+                                    <?php endif; ?>
+                                </div>
+                                <div class="card-body d-flex flex-column">
+                                    <h5 class="card-title">
+                                        <!-- Link bao quanh tên sản phẩm -->
+                                        <a href="<?php echo $product_link; ?>" class="text-decoration-none text-dark">
+                                            <?php echo htmlspecialchars($product['name']); ?>
+                                        </a>
+                                    </h5>
+                                    <p class="card-description text-muted small mb-2">
+                                        <?php echo mb_strimwidth(htmlspecialchars($product['description']), 0, 50, "..."); ?>
+                                    </p>
+                                    <div class="rating-stars mb-2">
+                                        <?php for($i = 0; $i < 5; $i++): ?>
+                                            <?php if($i < $product['rating']): ?>★<?php else: ?>☆<?php endif; ?>
+                                        <?php endfor; ?>
+                                    </div>
+                                    <div class="price-group mt-auto">
+                                        <span class="current-price"><?php echo number_format($product['price']); ?> đ</span>
+                                        <?php if ($discount_percent > 0): ?>
+                                            <span class="original-price"><?php echo number_format($product['original_price']); ?> đ</span>
+                                        <?php endif; ?>
+                                    </div>
+                                    <!-- Nút Xem chi tiết (thay vì Thêm vào giỏ ngay) -->
+                                    <a href="<?php echo $product_link; ?>" class="btn btn-primary w-100 mt-3">Xem chi tiết</a>
+                                </div>
                             </div>
-                            <a href="#" class="btn btn-primary">Thêm vào giỏ</a>
                         </div>
-                    </div>
-                </div>
+                <?php
+                    } // Kết thúc vòng lặp
+                } else {
+                    echo "<p class='text-center'>Chưa có sản phẩm nào.</p>";
+                }
+                // Đóng kết nối nếu cần, nhưng footer thường không cần đóng gấp ở đây
+                ?>
             </div>
         </div>
     </section>
 
-    <!-- SECTION VỀ CHÚNG TÔI -->
+    <!-- SECTION VỀ CHÚNG TÔI (GIỮ NGUYÊN) -->
     <section class="section-dark">
         <div class="container">
             <div class="row align-items-center">
