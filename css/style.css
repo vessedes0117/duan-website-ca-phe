@@ -496,3 +496,101 @@ main {
 .score-box {
     padding-right: 1rem;
 }
+/* --- TRANG GIỎ HÀNG (CART PAGE) --- */
+.cart-container {
+    background-color: #fff;
+    border-radius: 12px;
+    box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+    overflow: hidden;
+}
+
+/* Bảng giỏ hàng */
+.cart-table thead {
+    background-color: #f5f0e9; /* Màu nền cafe sữa nhạt */
+}
+.cart-table th {
+    font-family: var(--font-display, sans-serif);
+    color: var(--color-primary-dark, #b45309);
+    font-weight: 700;
+    border: none;
+    padding: 1rem;
+}
+.cart-table td {
+    vertical-align: middle;
+    padding: 1.5rem 1rem;
+    border-bottom: 1px solid #f3f4f6;
+}
+.cart-product-img {
+    width: 80px;
+    height: 80px;
+    object-fit: cover;
+    border-radius: 8px;
+    border: 1px solid #eee;
+}
+.cart-product-name a {
+    text-decoration: none;
+    color: #44403c;
+    font-weight: 600;
+    font-size: 1.05rem;
+    transition: 0.2s;
+}
+.cart-product-name a:hover {
+    color: var(--color-primary, #d97706);
+}
+
+/* Input số lượng nhỏ gọn */
+.quantity-group-sm {
+    width: 110px;
+}
+.quantity-group-sm .btn {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.9rem;
+}
+.quantity-group-sm input {
+    font-size: 0.9rem;
+    padding: 0.25rem;
+}
+
+/* Cột Tổng tiền bên phải */
+.cart-summary {
+    background-color: #fff7ed; /* Cam rất nhạt */
+    border: 1px solid #ffedd5;
+    border-radius: 12px;
+    padding: 1.5rem;
+    position: sticky;
+    top: 90px; /* Trượt theo khi cuộn */
+}
+.summary-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 1rem;
+    color: #666;
+}
+.summary-total {
+    border-top: 2px dashed #d97706;
+    padding-top: 1rem;
+    margin-top: 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+.summary-total span {
+    font-size: 1.1rem;
+    font-weight: 700;
+    color: #44403c;
+}
+.summary-total .total-price {
+    font-size: 1.5rem;
+    color: #d97706; /* Màu cam chủ đạo */
+}
+
+/* Nút xóa */
+.btn-remove {
+    color: #9ca3af;
+    transition: 0.2s;
+}
+.btn-remove:hover {
+    color: #ef4444; /* Đỏ */
+    background-color: #fee2e2;
+    border-radius: 50%;
+}
