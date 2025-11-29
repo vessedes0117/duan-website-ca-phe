@@ -20,6 +20,8 @@ if (session_status() == PHP_SESSION_NONE) {
     
     <!-- Custom CSS -->
     <link rel="stylesheet" href="css/style.css">
+    <!-- Bootstrap Icons -->
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.1/font/bootstrap-icons.css">
 </head>
 <body>
     <header>
@@ -42,7 +44,18 @@ if (session_status() == PHP_SESSION_NONE) {
                             <a class="nav-link" href="products.php">Sản phẩm</a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="#">Giỏ hàng</a>
+                            <a class="nav-link" href="cart.php">
+                                Giỏ hàng 
+                                <?php 
+                                $count = 0;
+                                if(isset($_SESSION['cart']) && count($_SESSION['cart']) > 0) {
+                                    $count = array_sum($_SESSION['cart']);
+                                }
+                                ?>
+                                <span id="cart-badge" class="badge bg-danger rounded-pill ms-1" style="font-size: 0.7rem; <?php echo ($count > 0) ? '' : 'display:none;'; ?>">
+                                    <?php echo $count; ?>
+                                </span>
+                            </a>
                         </li>
                     </ul>
 

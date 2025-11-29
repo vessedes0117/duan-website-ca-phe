@@ -74,7 +74,10 @@ if (isset($_GET['keyword'])) {
                                                 <span class="original-price"><?php echo number_format($product['original_price']); ?> đ</span>
                                             <?php endif; ?>
                                         </div>
-                                        <a href="#" class="btn btn-primary">Thêm vào giỏ</a>
+                                        
+                                        <!-- CẬP NHẬT: Nút Mua ngay dẫn về trang chi tiết -->
+                                        <a href="product-detail.php?id=<?php echo $product['id']; ?>" class="btn btn-primary w-100 mt-auto">Mua ngay</a>
+                                        
                                     </div>
                                 </div>
                             </div>

@@ -7,7 +7,6 @@
             <h1 class="display-4">Cà Phê Việt Nam</h1>
             <p class="lead">Hương vị đậm đà, truyền thống thuần túy</p>
             <a href="products.php" class="btn btn-primary btn-lg mx-2">Khám phá sản phẩm</a>
-            <a href="#featured-products" class="btn btn-outline-light btn-lg mx-2">Xem thêm</a>
         </div>
     </section>
 
@@ -73,7 +72,7 @@
                                         <?php endif; ?>
                                     </div>
                                     <!-- Nút Xem chi tiết (thay vì Thêm vào giỏ ngay) -->
-                                    <a href="<?php echo $product_link; ?>" class="btn btn-primary w-100 mt-3">Xem chi tiết</a>
+                                    <a href="<?php echo $product_link; ?>" class="btn btn-primary w-100 mt-3">Mua ngay</a>
                                 </div>
                             </div>
                         </div>

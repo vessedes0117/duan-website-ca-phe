@@ -13,22 +13,7 @@ $product_id = intval($_GET['id']);
 // 2. XỬ LÝ POST (PRG Pattern)
 if ($_SERVER['REQUEST_METHOD'] == 'POST') {
     
-    // Thêm giỏ hàng
-    if (isset($_POST['add_to_cart'])) {
-        $qty = intval($_POST['quantity']);
-        if ($qty < 1) $qty = 1;
-        if (!isset($_SESSION['cart'])) { $_SESSION['cart'] = []; }
-        
-        if (isset($_SESSION['cart'][$product_id])) {
-            $_SESSION['cart'][$product_id] += $qty;
-        } else {
-            $_SESSION['cart'][$product_id] = $qty;
-        }
-        echo "<script>alert('Đã thêm sản phẩm vào giỏ hàng!'); window.location.href = 'product-detail.php?id=$product_id';</script>";
-        exit();
-    }
-
-    // Gửi đánh giá
+    // Gửi đánh giá (Logic đánh giá giữ nguyên tại đây)
     if (isset($_POST['submit_review'])) {
         if (!isset($_SESSION['user_id'])) {
             echo "<script>alert('Vui lòng đăng nhập!'); window.location.href = 'login.php';</script>";
@@ -91,7 +76,7 @@ $result_comments = $conn->query($sql_comments);
 ?>
 
 <main class="container py-5">
-    <!-- PHẦN TRÊN: THÔNG TIN SẢN PHẨM (GIỮ NGUYÊN) -->
+    <!-- PHẦN TRÊN: THÔNG TIN SẢN PHẨM -->
     <div class="product-detail-container">
         <div class="row">
             <div class="col-md-6">
@@ -135,13 +120,29 @@ $result_comments = $conn->query($sql_comments);
                 
                 <p class="text-muted mb-4"><?php echo mb_strimwidth(strip_tags($product['description']), 0, 150, "..."); ?></p>
 
-                <form method="POST" class="d-flex gap-3 align-items-center">
+                <!-- CẬP NHẬT Ở ĐÂY: Form đã được sửa ID và Type của nút bấm -->
+                <form action="cart.php" method="POST" id="productForm" class="d-flex flex-column flex-md-row gap-3">
+                    
+                    <input type="hidden" name="add_to_cart" value="1">
+                    <input type="hidden" name="product_id" value="<?php echo $product['id']; ?>">
+
                     <div class="input-group" style="width: 140px;">
                         <button class="btn btn-outline-secondary" type="button" onclick="decreaseQty()">-</button>
                         <input type="number" name="quantity" id="qtyInput" class="form-control text-center fw-bold" value="1" min="1">
                         <button class="btn btn-outline-secondary" type="button" onclick="increaseQty()">+</button>
                     </div>
-                    <button type="submit" name="add_to_cart" class="btn btn-primary btn-lg flex-grow-1 shadow-sm">Thêm vào giỏ hàng</button>
+
+                    <div class="d-flex gap-2 flex-grow-1">
+                        <!-- Nút Thêm vào giỏ là type="button" để xử lý bằng JS -->
+                        <button type="button" id="btnAddToCart" class="btn btn-outline-primary flex-grow-1">
+                            <i class="bi bi-cart-plus"></i> Thêm vào giỏ
+                        </button>
+
+                        <!-- Nút Thanh toán là type="submit" để chuyển trang -->
+                        <button type="submit" name="buy_now" value="1" class="btn btn-primary flex-grow-1 fw-bold">
+                            Thanh toán
+                        </button>
+                    </div>
                 </form>
             </div>
         </div>
@@ -222,6 +223,7 @@ $result_comments = $conn->query($sql_comments);
                             
                             <?php if(isset($_SESSION['user_id'])): ?>
                                 <form method="POST" id="reviewForm">
+                                    <input type="hidden" name="submit_review" value="1">
                                     <!-- Chọn sao bằng Click -->
                                     <div class="mb-4">
                                         <label class="form-label fw-bold small text-muted text-uppercase">1. Chọn mức độ hài lòng</label>
@@ -242,7 +244,7 @@ $result_comments = $conn->query($sql_comments);
                                         <label class="form-label fw-bold small text-muted text-uppercase">2. Nội dung đánh giá</label>
                                         <textarea name="content" class="form-control modern-textarea" rows="5" placeholder="Chất lượng sản phẩm thế nào? Giao hàng có nhanh không?..." required></textarea>
                                     </div>
-                                    <button type="submit" name="submit_review" class="btn btn-primary w-100 py-2 fw-bold rounded-pill shadow-sm">Gửi đánh giá ngay</button>
+                                    <button type="submit" class="btn btn-primary w-100 py-2 fw-bold rounded-pill shadow-sm">Gửi đánh giá ngay</button>
                                 </form>
                             <?php else: ?>
                                 <div class="text-center py-4 bg-light rounded-3 border border-dashed">
