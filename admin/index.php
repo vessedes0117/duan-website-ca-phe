@@ -3,7 +3,6 @@ session_start();
 require_once '../includes/db_connection.php'; // Kết nối CSDL từ thư mục cha
 
 // 1. KIỂM TRA QUYỀN ADMIN
-// Nếu chưa đăng nhập hoặc role không phải là 1 (Admin) thì đá về trang login
 if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] != 1) {
     header("Location: ../login.php");
     exit();
@@ -14,7 +13,7 @@ if (!isset($_SESSION['user_id']) || $_SESSION['user_role'] != 1) {
 $sql_orders = "SELECT COUNT(*) as total FROM orders";
 $total_orders = $conn->query($sql_orders)->fetch_assoc()['total'];
 
-// Tổng doanh thu (Chỉ tính đơn đã Hoàn thành - Completed, nhưng tạm thời tính hết để bạn vui)
+// Tổng doanh thu
 $sql_revenue = "SELECT SUM(total_money) as total FROM orders";
 $revenue = $conn->query($sql_revenue)->fetch_assoc()['total'];
 
@@ -131,13 +130,8 @@ $total_customers = $conn->query($sql_users)->fetch_assoc()['total'];
                     </div>
                 </div>
             </div>
-
-            <div class="mt-5">
-                <div class="alert alert-secondary text-center">
-                    <i class="bi bi-arrow-up-circle"></i> Chọn mục "Quản lý Đơn hàng" ở menu bên trái để xử lý đơn khách đặt.
-                </div>
+            
             </div>
-        </div>
     </div>
 </div>
 
