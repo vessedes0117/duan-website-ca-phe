@@ -114,36 +114,45 @@ $result_comments = $conn->query($sql_comments);
                 </div>
 
                 <div class="product-meta mb-4">
-                    <p class="mb-2"><i class="bi bi-check-circle-fill text-success"></i> Tình trạng: <strong>Còn hàng</strong></p>
+                    <?php if ($product['stock_quantity'] > 0): ?>
+    <p class="mb-2"><i class="bi bi-check-circle-fill text-success"></i> Tình trạng: <strong>Còn hàng</strong> (<?php echo $product['stock_quantity']; ?>)</p>
+<?php else: ?>
+    <p class="mb-2"><i class="bi bi-x-circle-fill text-danger"></i> Tình trạng: <strong class="text-danger">Hết hàng</strong></p>
+<?php endif; ?>
                     <p class="mb-2"><i class="bi bi-truck text-coffee"></i> Vận chuyển: <strong>Miễn phí cho đơn từ 500k</strong></p>
                 </div>
                 
                 <p class="text-muted mb-4"><?php echo mb_strimwidth(strip_tags($product['description']), 0, 150, "..."); ?></p>
 
                 <!-- CẬP NHẬT Ở ĐÂY: Form đã được sửa ID và Type của nút bấm -->
-                <form action="cart.php" method="POST" id="productForm" class="d-flex flex-column flex-md-row gap-3">
-                    
-                    <input type="hidden" name="add_to_cart" value="1">
-                    <input type="hidden" name="product_id" value="<?php echo $product['id']; ?>">
+                <?php if ($product['stock_quantity'] > 0): ?>
+    <form action="cart.php" method="POST" id="productForm" class="d-flex flex-column flex-md-row gap-3">
+        <input type="hidden" name="add_to_cart" value="1">
+        <input type="hidden" name="product_id" value="<?php echo $product['id']; ?>">
 
-                    <div class="input-group" style="width: 140px;">
-                        <button class="btn btn-outline-secondary" type="button" onclick="decreaseQty()">-</button>
-                        <input type="number" name="quantity" id="qtyInput" class="form-control text-center fw-bold" value="1" min="1">
-                        <button class="btn btn-outline-secondary" type="button" onclick="increaseQty()">+</button>
-                    </div>
+        <div class="input-group" style="width: 140px;">
+            <button class="btn btn-outline-secondary" type="button" onclick="decreaseQty()">-</button>
+            <input type="number" name="quantity" id="qtyInput" class="form-control text-center fw-bold" value="1" min="1" max="<?php echo $product['stock_quantity']; ?>">
+            <button class="btn btn-outline-secondary" type="button" onclick="increaseQty()">+</button>
+        </div>
 
-                    <div class="d-flex gap-2 flex-grow-1">
-                        <!-- Nút Thêm vào giỏ là type="button" để xử lý bằng JS -->
-                        <button type="button" id="btnAddToCart" class="btn btn-outline-primary flex-grow-1">
-                            <i class="bi bi-cart-plus"></i> Thêm vào giỏ
-                        </button>
-
-                        <!-- Nút Thanh toán là type="submit" để chuyển trang -->
-                        <button type="submit" name="buy_now" value="1" class="btn btn-primary flex-grow-1 fw-bold">
-                            Thanh toán
-                        </button>
-                    </div>
-                </form>
+        <div class="d-flex gap-2 flex-grow-1">
+            <button type="button" id="btnAddToCart" class="btn btn-outline-primary flex-grow-1">
+                <i class="bi bi-cart-plus"></i> Thêm vào giỏ
+            </button>
+            <button type="submit" name="buy_now" value="1" class="btn btn-primary flex-grow-1 fw-bold">
+                Thanh toán
+            </button>
+        </div>
+    </form>
+<?php else: ?>
+    <div class="d-grid gap-2">
+        <button class="btn btn-secondary py-3 fw-bold disabled" type="button" disabled>
+            <i class="bi bi-emoji-frown"></i> Tạm hết hàng
+        </button>
+        <small class="text-muted text-center">Sản phẩm đang được nhập thêm. Vui lòng quay lại sau.</small>
+    </div>
+<?php endif; ?>
             </div>
         </div>
     </div>

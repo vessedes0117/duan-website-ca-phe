@@ -2,29 +2,47 @@
 if (session_status() == PHP_SESSION_NONE) { session_start(); }
 require_once 'includes/db_connection.php';
 $error = "";
+
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $email = trim($_POST['email']);
     $password = $_POST['password'];
+
     if (empty($email) || empty($password)) {
         $error = "Vui lòng nhập cả email và mật khẩu.";
     } else {
-        $sql = "SELECT id, fullname, password FROM users WHERE email = ?";
+        // CẬP NHẬT: Lấy thêm cột 'role' để kiểm tra quyền Admin
+        $sql = "SELECT id, fullname, password, role FROM users WHERE email = ?";
         $stmt = $conn->prepare($sql);
         $stmt->bind_param("s", $email);
         $stmt->execute();
         $result = $stmt->get_result();
+        
         if ($result->num_rows === 1) {
             $user = $result->fetch_assoc();
+            
             if (password_verify($password, $user['password'])) {
+                // Lưu thông tin vào Session
                 $_SESSION['user_id'] = $user['id'];
                 $_SESSION['user_fullname'] = $user['fullname'];
-                header("Location: index.php");
+                $_SESSION['user_role'] = $user['role']; // Lưu quyền hạn
+
+                // PHÂN QUYỀN CHUYỂN HƯỚNG
+                if ($user['role'] == 1) {
+                    // Nếu là Admin -> Vào trang quản trị
+                    header("Location: admin/index.php");
+                } else {
+                    // Nếu là Khách -> Về trang chủ
+                    header("Location: index.php");
+                }
                 exit();
-            } else { $error = "Email hoặc mật khẩu không chính xác."; }
-        } else { $error = "Email hoặc mật khẩu không chính xác."; }
+            } else {
+                $error = "Email hoặc mật khẩu không chính xác.";
+            }
+        } else {
+            $error = "Email hoặc mật khẩu không chính xác.";
+        }
         $stmt->close();
     }
-    // Không đóng kết nối ở đây để tránh lỗi nếu có include footer sau này
 }
 ?>
 
